@@ -1,0 +1,4 @@
+ALTER TABLE "products"
+ADD COLUMN "ingredients" TEXT[] NOT NULL DEFAULT ARRAY[]::TEXT[],
+ADD COLUMN "highlights" TEXT[] NOT NULL DEFAULT ARRAY[]::TEXT[],
+ADD COLUMN "calories" INTEGER;
