@@ -25,7 +25,7 @@ router.get('/', async (_req: Request, res: Response) => {
   }
 });
 
-router.get('/admin', protect, authorizeRoles('SUPER_ADMIN', 'MANAGER'), async (_req: Request, res: Response) => {
+router.get('/admin', protect, authorizeRoles('ADMIN'), async (_req: Request, res: Response) => {
   try {
     const posts = await prisma.blogPost.findMany({
       orderBy: { createdAt: 'desc' },
@@ -52,7 +52,7 @@ router.get('/:slug', async (req: Request, res: Response) => {
   }
 });
 
-router.post('/', protect, authorizeRoles('SUPER_ADMIN', 'MANAGER'), async (req: Request, res: Response) => {
+router.post('/', protect, authorizeRoles('ADMIN'), async (req: Request, res: Response) => {
   try {
     const title = typeof req.body.title === 'string' ? req.body.title.trim() : '';
     const excerpt = typeof req.body.excerpt === 'string' ? req.body.excerpt.trim() : '';

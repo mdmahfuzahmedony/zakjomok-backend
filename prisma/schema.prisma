@@ -14,9 +14,7 @@ datasource db {
 
 enum Role {
   CUSTOMER
-  SUPER_ADMIN
-  MANAGER
-  VENDOR
+  ADMIN
 }
 
 enum VendorStatus {

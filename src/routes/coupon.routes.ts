@@ -88,7 +88,7 @@ router.get('/active', async (_req: Request, res: Response) => {
   }
 });
 
-router.get('/', protect, authorizeRoles('SUPER_ADMIN', 'MANAGER'), async (_req: Request, res: Response) => {
+router.get('/', protect, authorizeRoles('ADMIN'), async (_req: Request, res: Response) => {
   try {
     const coupons = await prisma.coupon.findMany({ orderBy: { createdAt: 'desc' } });
     res.json({ success: true, data: coupons });
@@ -99,7 +99,7 @@ router.get('/', protect, authorizeRoles('SUPER_ADMIN', 'MANAGER'), async (_req: 
 });
 
 // POST Create Coupon (Admin)
-router.post('/', protect, authorizeRoles('SUPER_ADMIN', 'MANAGER'), async (req: Request, res: Response) => {
+router.post('/', protect, authorizeRoles('ADMIN'), async (req: Request, res: Response) => {
   try {
     const { code, description, discountPercent, discountAmount, minOrderAmount, userId } = req.body;
 
@@ -147,7 +147,7 @@ router.post('/', protect, authorizeRoles('SUPER_ADMIN', 'MANAGER'), async (req: 
   }
 });
 
-router.patch('/:id/status', protect, authorizeRoles('SUPER_ADMIN', 'MANAGER'), async (req: Request, res: Response) => {
+router.patch('/:id/status', protect, authorizeRoles('ADMIN'), async (req: Request, res: Response) => {
   try {
     const { isActive } = req.body;
     if (typeof isActive !== 'boolean') {

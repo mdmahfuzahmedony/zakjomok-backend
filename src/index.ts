@@ -21,9 +21,16 @@ const port = process.env.PORT || 5000;
 // Middleware
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like curl, postman, server-to-server) or all frontend origins
+      if (!origin || origin.startsWith('http://localhost:') || origin.endsWith('.vercel.app') || origin === process.env.FRONTEND_URL) {
+        return callback(null, true);
+      }
+      return callback(null, true);
+    },
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true,
   })
 );
 

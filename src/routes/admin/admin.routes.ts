@@ -6,7 +6,7 @@ import { authorizeRoles } from '../../middleware/role.middleware.js';
 const router = Router();
 
 router.use(protect);
-router.use(authorizeRoles('SUPER_ADMIN', 'MANAGER'));
+router.use(authorizeRoles('ADMIN'));
 
 // GET Admin Dashboard Summary Stats
 router.get('/stats', async (req: Request, res: Response) => {
@@ -19,6 +19,7 @@ router.get('/stats', async (req: Request, res: Response) => {
       deliveredOrders,
       totalProducts,
       totalCategories,
+      totalCustomers,
       recentOrders,
       lowStockProducts,
     ] = await Promise.all([
@@ -29,6 +30,7 @@ router.get('/stats', async (req: Request, res: Response) => {
       prisma.order.count({ where: { status: 'DELIVERED' } }),
       prisma.product.count({ where: { isActive: true } }),
       prisma.category.count(),
+      prisma.user.count({ where: { role: 'CUSTOMER' } }),
       prisma.order.findMany({
         take: 5,
         orderBy: { createdAt: 'desc' },
@@ -61,6 +63,7 @@ router.get('/stats', async (req: Request, res: Response) => {
           deliveredOrders,
           totalProducts,
           totalCategories,
+          totalCustomers,
         },
         recentOrders,
         lowStockProducts,
@@ -69,6 +72,33 @@ router.get('/stats', async (req: Request, res: Response) => {
   } catch (error) {
     console.error('Error fetching admin stats:', error);
     res.status(500).json({ success: false, message: 'Failed to fetch admin stats' });
+  }
+});
+
+// GET all customers (Admin)
+router.get('/customers', async (req: Request, res: Response) => {
+  try {
+    const customers = await prisma.user.findMany({
+      where: { role: 'CUSTOMER' },
+      select: {
+        id: true,
+        name: true,
+        phone: true,
+        email: true,
+        city: true,
+        address: true,
+        createdAt: true,
+        _count: {
+          select: { orders: true },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    res.json({ success: true, data: customers });
+  } catch (error) {
+    console.error('Error fetching customers:', error);
+    res.status(500).json({ success: false, message: 'Failed to fetch customers' });
   }
 });
 

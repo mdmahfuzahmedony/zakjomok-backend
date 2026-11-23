@@ -85,7 +85,7 @@ router.get('/:identifier', async (req: Request, res: Response) => {
 });
 
 // POST create product (Admin)
-router.post('/', protect, authorizeRoles('SUPER_ADMIN', 'MANAGER'), async (req: Request, res: Response) => {
+router.post('/', protect, authorizeRoles('ADMIN'), async (req: Request, res: Response) => {
   try {
     const {
       name, slug, description, price, discountPrice, packSize, stock, imageUrl,
@@ -156,7 +156,7 @@ router.post('/', protect, authorizeRoles('SUPER_ADMIN', 'MANAGER'), async (req: 
 });
 
 // PUT update product (Admin)
-router.put('/:id', protect, authorizeRoles('SUPER_ADMIN', 'MANAGER'), async (req: Request, res: Response) => {
+router.put('/:id', protect, authorizeRoles('ADMIN'), async (req: Request, res: Response) => {
   try {
     const id = String(req.params.id);
     const {
@@ -164,33 +164,59 @@ router.put('/:id', protect, authorizeRoles('SUPER_ADMIN', 'MANAGER'), async (req
       isFeatured, isActive, categoryId, ingredients: ingredientsValue,
       highlights: highlightsValue, calories: caloriesValue,
     } = req.body;
+
     const ingredients = ingredientsValue === undefined ? undefined : parseProductList(ingredientsValue);
     const highlights = highlightsValue === undefined ? undefined : parseProductList(highlightsValue);
-    const calories = parseCalories(caloriesValue);
+    const calories = caloriesValue === undefined ? undefined : parseCalories(caloriesValue);
 
-    if (ingredients === null || highlights === null || calories === undefined) {
+    if (
+      (ingredientsValue !== undefined && ingredients === null) ||
+      (highlightsValue !== undefined && highlights === null) ||
+      (caloriesValue !== undefined && calories === undefined)
+    ) {
       return res.status(400).json({
         success: false,
         message: 'Ingredients, highlights, or calorie value is invalid',
       });
     }
 
-    if (imageUrl !== undefined && !isPublicStorageImageUrl(imageUrl, 'products')) {
-      return res.status(400).json({
-        success: false,
-        message: 'Product images must be uploaded to Supabase Storage',
-      });
+    if (imageUrl !== undefined && typeof imageUrl === 'string' && imageUrl.trim().length > 0) {
+      const isHttp = imageUrl.startsWith('http://') || imageUrl.startsWith('https://');
+      if (!isHttp) {
+        return res.status(400).json({
+          success: false,
+          message: 'Product image URL is invalid',
+        });
+      }
+    }
+
+    if (price !== undefined) {
+      const parsedPrice = parseFloat(price);
+      if (isNaN(parsedPrice) || parsedPrice < 0) {
+        return res.status(400).json({ success: false, message: 'সঠিক মূল্য দিন' });
+      }
+    }
+
+    if (stock !== undefined) {
+      const parsedStock = parseInt(stock);
+      if (isNaN(parsedStock) || parsedStock < 0) {
+        return res.status(400).json({ success: false, message: 'সঠিক স্টক পরিমাণ দিন' });
+      }
     }
 
     const updated = await prisma.product.update({
       where: { id },
       data: {
-        ...(name && { name }),
-        ...(slug && { slug }),
-        ...(description !== undefined && { description }),
+        ...(name && { name: String(name).trim() }),
+        ...(slug && { slug: String(slug).trim() }),
+        ...(description !== undefined && { description: String(description).trim() }),
         ...(price !== undefined && { price: parseFloat(price) }),
-        ...(discountPrice !== undefined && { discountPrice: discountPrice ? parseFloat(discountPrice) : null }),
-        ...(packSize !== undefined && { packSize }),
+        ...(discountPrice !== undefined && {
+          discountPrice: discountPrice !== null && discountPrice !== '' && !isNaN(parseFloat(discountPrice))
+            ? parseFloat(discountPrice)
+            : null,
+        }),
+        ...(packSize !== undefined && { packSize: String(packSize).trim() }),
         ...(stock !== undefined && { stock: parseInt(stock) }),
         ...(imageUrl !== undefined && { imageUrl }),
         ...(ingredients !== undefined && { ingredients }),
@@ -203,15 +229,18 @@ router.put('/:id', protect, authorizeRoles('SUPER_ADMIN', 'MANAGER'), async (req
       include: { category: true },
     });
 
-    res.json({ success: true, data: updated });
-  } catch (error) {
+    res.json({ success: true, message: 'পণ্য সফলভাবে আপডেট করা হয়েছে', data: updated });
+  } catch (error: any) {
+    if (error?.code === 'P2025') {
+      return res.status(404).json({ success: false, message: 'পণ্যটি খুঁজে পাওয়া যায়নি' });
+    }
     console.error('Error updating product:', error);
     res.status(500).json({ success: false, message: 'Failed to update product' });
   }
 });
 
 // DELETE product (Admin)
-router.delete('/:id', protect, authorizeRoles('SUPER_ADMIN', 'MANAGER'), async (req: Request, res: Response) => {
+router.delete('/:id', protect, authorizeRoles('ADMIN'), async (req: Request, res: Response) => {
   try {
     const id = String(req.params.id);
     await prisma.product.delete({ where: { id } });

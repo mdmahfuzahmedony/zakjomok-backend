@@ -38,7 +38,7 @@ router.post('/', async (req: Request, res: Response) => {
 });
 
 // GET all messages (Admin)
-router.get('/', protect, authorizeRoles('SUPER_ADMIN', 'MANAGER'), async (_req: Request, res: Response) => {
+router.get('/', protect, authorizeRoles('ADMIN'), async (_req: Request, res: Response) => {
   try {
     const messages = await prisma.contactMessage.findMany({
       orderBy: { createdAt: 'desc' },

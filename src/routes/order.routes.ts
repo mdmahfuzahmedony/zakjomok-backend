@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import prisma from '../lib/prisma.js';
-import { protect } from '../middleware/auth.middleware.js';
+import { protect, AuthRequest } from '../middleware/auth.middleware.js';
 import { authorizeRoles } from '../middleware/role.middleware.js';
 
 const router = Router();
@@ -148,8 +148,28 @@ router.post('/', async (req: Request, res: Response) => {
   }
 });
 
+// GET my orders (Customer)
+router.get('/my-orders', protect, async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.user?.id) {
+      return res.status(401).json({ success: false, message: 'Please login first' });
+    }
+    const orders = await prisma.order.findMany({
+      where: { userId: req.user.id },
+      include: {
+        items: true,
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+    res.json({ success: true, data: orders });
+  } catch (error) {
+    console.error('Error fetching my orders:', error);
+    res.status(500).json({ success: false, message: 'Failed to fetch customer orders' });
+  }
+});
+
 // GET all orders (Admin with filters)
-router.get('/', protect, authorizeRoles('SUPER_ADMIN', 'MANAGER'), async (req: Request, res: Response) => {
+router.get('/', protect, authorizeRoles('ADMIN'), async (req: Request, res: Response) => {
   try {
     const { status, search } = req.query;
 
@@ -182,7 +202,7 @@ router.get('/', protect, authorizeRoles('SUPER_ADMIN', 'MANAGER'), async (req: R
 });
 
 // GET single order by id or orderNumber
-router.get('/:identifier', protect, authorizeRoles('SUPER_ADMIN', 'MANAGER'), async (req: Request, res: Response) => {
+router.get('/:identifier', protect, authorizeRoles('ADMIN'), async (req: Request, res: Response) => {
   try {
     const identifier = String(req.params.identifier);
     const order = await prisma.order.findFirst({
@@ -207,7 +227,7 @@ router.get('/:identifier', protect, authorizeRoles('SUPER_ADMIN', 'MANAGER'), as
 
 // PATCH update order status (Admin)
 // Valid statuses: PENDING -> CONFIRMED -> PROCESSING -> SHIPPED -> DELIVERED, CANCELLED
-router.patch('/:id/status', protect, authorizeRoles('SUPER_ADMIN', 'MANAGER'), async (req: Request, res: Response) => {
+router.patch('/:id/status', protect, authorizeRoles('ADMIN'), async (req: Request, res: Response) => {
   try {
     const id = String(req.params.id);
     const { status } = req.body;

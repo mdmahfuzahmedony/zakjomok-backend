@@ -15,7 +15,7 @@ const upload = multer({
 router.post(
   '/image',
   protect,
-  authorizeRoles('SUPER_ADMIN', 'MANAGER'),
+  authorizeRoles('ADMIN'),
   (req: Request, res: Response, next) => {
     upload.single('image')(req, res, (error: unknown) => {
       if (error instanceof multer.MulterError) {

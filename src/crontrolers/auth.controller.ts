@@ -208,7 +208,6 @@ export const getMe = async (req: AuthRequest, res: Response) => {
         address: true,
         city: true,
         role: true,
-        vendorStatus: true,
         createdAt: true,
       },
     });

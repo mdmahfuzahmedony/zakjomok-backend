@@ -1,11 +1,7 @@
 import { Response, NextFunction } from 'express';
 import { AuthRequest } from './auth.middleware.js';
 
-type UserRole =
-  | 'CUSTOMER'
-  | 'SUPER_ADMIN'
-  | 'MANAGER'
-  | 'VENDOR';
+type UserRole = 'CUSTOMER' | 'ADMIN';
 
 export const authorizeRoles = (...roles: UserRole[]) => {
   return (

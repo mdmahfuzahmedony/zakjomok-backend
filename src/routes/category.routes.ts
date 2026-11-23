@@ -51,7 +51,7 @@ router.get('/:identifier', async (req: Request, res: Response) => {
 });
 
 // POST create category (Admin)
-router.post('/', protect, authorizeRoles('SUPER_ADMIN', 'MANAGER'), async (req: Request, res: Response) => {
+router.post('/', protect, authorizeRoles('ADMIN'), async (req: Request, res: Response) => {
   try {
     const { name, slug, description, imageUrl } = req.body;
     if (!name || !slug || !isPublicStorageImageUrl(imageUrl, 'categories')) {
