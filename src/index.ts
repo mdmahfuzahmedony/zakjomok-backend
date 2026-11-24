@@ -12,6 +12,7 @@ import couponRoutes from './routes/coupon.routes.js';
 import contactRoutes from './routes/contact.routes.js';
 import uploadRoutes from './routes/upload.routes.js';
 import blogRoutes from './routes/blog.routes.js';
+import chatRoutes from './routes/chat.routes.js';
 
 dotenv.config();
 
@@ -43,6 +44,7 @@ app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/coupons', couponRoutes);
 app.use('/api/contact', contactRoutes);
+app.use('/api/chat', chatRoutes);
 app.use('/api/blogs', blogRoutes);
 app.use('/api/uploads', uploadRoutes);
 app.use('/api/admin', adminRoutes);

@@ -248,6 +248,23 @@ model ContactMessage {
   @@map("contact_messages")
 }
 
+// -------------------- LIVE CHAT MESSAGE --------------------
+
+model LiveChatMessage {
+  id          String   @id @default(uuid())
+  sessionId   String
+  senderRole  String   @default("CUSTOMER") // "CUSTOMER" or "ADMIN"
+  senderName  String   @default("কাস্টমার")
+  senderPhone String?
+  text        String
+  isRead      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  @@index([sessionId])
+  @@index([createdAt])
+  @@map("live_chat_messages")
+}
+
 // -------------------- BLOG POST --------------------
 
 model BlogPost {
