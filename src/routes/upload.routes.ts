@@ -46,7 +46,8 @@ router.post(
       });
     }
 
-    const supabaseUrl = process.env.SUPABASE_URL?.replace(/\/$/, '');
+    const rawUrl = process.env.SUPABASE_URL || '';
+    const supabaseUrl = rawUrl.replace(/\/rest\/v1\/?$/, '').replace(/\/$/, '');
     const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
     const configuredServiceRoleJwt = process.env.SUPABASE_SERVICE_ROLE_JWT;
     const serviceRoleJwt =

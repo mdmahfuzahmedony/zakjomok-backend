@@ -256,7 +256,8 @@ model LiveChatMessage {
   senderRole  String   @default("CUSTOMER") // "CUSTOMER" or "ADMIN"
   senderName  String   @default("কাস্টমার")
   senderPhone String?
-  text        String
+  text        String   @default("")
+  imageUrl    String?
   isRead      Boolean  @default(false)
   createdAt   DateTime @default(now())
 

@@ -4,7 +4,8 @@ export const isPublicStorageImageUrl = (
   imageUrl: unknown,
   folder: ImageFolder,
 ): imageUrl is string => {
-  const supabaseUrl = process.env.SUPABASE_URL?.replace(/\/$/, '');
+  const rawUrl = process.env.SUPABASE_URL || '';
+  const supabaseUrl = rawUrl.replace(/\/rest\/v1\/?$/, '').replace(/\/$/, '');
   const bucket = process.env.SUPABASE_STORAGE_BUCKET;
   if (!supabaseUrl || !bucket || typeof imageUrl !== 'string') {
     return false;
